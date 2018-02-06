@@ -1,0 +1,11 @@
+# runtime files
+.DS_Store
+*.freq
+*.py[co]
+*.swp
+~*
+
+# custom
+documents
+data
+notebooks

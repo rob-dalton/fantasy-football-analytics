@@ -31,7 +31,6 @@ class GamePlayerAggregator(Aggregator):
     """ Aggregator for game player level data """
 
     def aggregate(self) -> None:
-
         if self._aggregated_data_frame is None:
             # clean data
             self._clean_data()
@@ -53,6 +52,7 @@ class GamePlayerAggregator(Aggregator):
         scorer.score(self._aggregated_data_frame, inplace=True)
 
     def _clean_data(self) -> None:
+        """ Rename Player_ID columns """
         for df in self._data_frames.values():
             df.rename(columns={'Passer_ID': 'Player_ID',
                                'Rusher_ID': 'Player_ID',

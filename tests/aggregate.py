@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from aggregate import GamePlayerAggregator
+from aggregators import GamePlayerAggregator
 
 class GamePlayerAggregatorTest(unittest.TestCase):
 

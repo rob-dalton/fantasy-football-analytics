@@ -1,1 +1,1 @@
-from game_player import GamePlayerAggregator
+from .game_player import GamePlayerAggregator

@@ -3,6 +3,7 @@
 *.freq
 *.py[co]
 *.swp
+*.log
 ~*
 
 # custom

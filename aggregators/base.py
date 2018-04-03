@@ -23,5 +23,9 @@ class Aggregator(object):
         raise NotImplementedError
 
     def _clean_data(self) -> None:
-        """ Clean data as needed """
-        raise NotImplementedError
+        """ Rename Player_ID columns, clean data as needed """
+        for df in self._data_frames.values():
+            df.rename(columns={'Passer_ID': 'Player_ID',
+                               'Rusher_ID': 'Player_ID',
+                               'Receiver_ID': 'Player_ID'},
+                      inplace=True)

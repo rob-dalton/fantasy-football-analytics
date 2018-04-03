@@ -17,6 +17,9 @@ class GamePlayerAggregatorTest(unittest.TestCase):
         for df in aggregator._data_frames.values():
             self.assertFalse(any(label in df.columns for label in labels))
             self.assertTrue('Player_ID' in df.reset_index().columns)
+            self.assertTrue('GameID' in df.index.names)
+
+        print('\ntest_clean_data passed.')
 
     def test_aggregate(self):
         pass

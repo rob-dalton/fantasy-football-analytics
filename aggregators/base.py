@@ -16,7 +16,19 @@ class Aggregator(object):
 
     def aggregate(self):
         """ Join DataFrames, store result """
-        raise NotImplementedError
+        if self._aggregated_data_frame is None:
+            # clean data
+            self._clean_data()
+
+            # join each DataFrame
+            df_agg = None
+            for k, df in self._data_frames.items():
+                if df_agg is None:
+                    df_agg = df
+                else:
+                    df_agg = df_agg.join(df, rsuffix="_{}".format(k))
+
+            self._aggregated_data_frame = df_agg.reset_index()
 
     def score(self) -> DataFrame:
         """ Add fantasy points to aggregated DataFrame """

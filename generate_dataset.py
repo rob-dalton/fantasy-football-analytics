@@ -12,15 +12,16 @@ import typing
 
 import pandas as pd
 
-from aggregators import GamePlayerAggregator
+from aggregators import SeasonPlayerAggregator
 from etc.types import DataFrame
 from etc.roster_builder import RosterBuilder
 
 if __name__ == "__main__":
 
     # setup filepaths to datasets
+    data_dir = os.environ['DATA_DIR']
+    roster_data_dir = os.path.join(data_dir, 'roster_data')
     nflscrapr_data_dir = os.environ['NFLSCRAPR_DATA_DIR']
-    roster_data_dir = os.environ['ROSTER_DATA_DIR']
     season_data_dir = os.path.join(nflscrapr_data_dir, 'season_player_stats')
 
     # iterate over season player data. Filter and join passer, rusher, receiver
@@ -66,6 +67,27 @@ if __name__ == "__main__":
     # TODO: change output dir to os.environ var or arg
     players_df.reset_index(inplace=True)
     players_df.to_csv('./data/players.csv', index=False)
+
+    # generate csv for season level data
+    season_dfs = {}
+    for csv in os.listdir(season_data_dir):
+        # get id column from csv filename
+        #   e.g. 'season_passing_csv' -> 'Passer_ID'
+        stat_type = csv[7:-10].title()
+        id_column = stat_type + 'er_ID'
+
+        df = pd.read_csv(os.path.join(season_data_dir, csv))
+        df.rename(columns={id_column: 'id'})
+
+        season_dfs[stat_type] = df
+
+    season_aggregator = SeasonPlayerAggregator(df_passing=season_dfs['Pass'],
+                                               df_rushing=season_dfs['Rush'],
+                                               df_receiving=season_dfs['Receiv'])
+
+    season_aggregator.aggregate()
+    season_aggregator._aggregated_data_frame.to_csv('./data/season.csv',
+                                                    index=False)
 
     # TODO: Add game_level_data DataFrame generation code here
     # TODO: Add play_level_data DataFrame generation code here

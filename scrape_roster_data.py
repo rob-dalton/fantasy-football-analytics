@@ -32,7 +32,7 @@ if __name__ == "__main__":
     if args.seasons is not None:
         seasons = args.seasons
     else:
-        seasons = range(2009, 2018)
+        seasons = range(1998, 2009)
 
     # log start of scraping
     if len(seasons) > 1:

@@ -20,15 +20,15 @@ if __name__ == "__main__":
 
     # setup filepaths to datasets
     data_dir = os.environ['DATA_DIR']
-    old_roster_data_dir = os.path.join(data_dir, 'roster_data')
+    old_rosters_dir = os.path.join(data_dir, 'roster_data')
     nflscrapr_data_dir = os.environ['NFLSCRAPR_DATA_DIR']
-    roster_data_dir = os.path.join(nflscrapr_data_dir, 'team_rosters')
+    rosters_dir = os.path.join(nflscrapr_data_dir, 'team_rosters')
     season_data_dir = os.path.join(nflscrapr_data_dir, 'season_player_stats')
 
     # iterate over team_roster data, build DataFrame with all player ids
     players_df = None
-    for csv in os.listdir(roster_data_dir):
-        df = pd.read_csv(os.path.join(roster_data_dir, csv))
+    for csv in os.listdir(rosters_dir):
+        df = pd.read_csv(os.path.join(rosters_dir, csv))
 
         df.rename(columns={'GSIS_ID': 'Player_ID',
                            'Player': 'Full_Name'},
@@ -44,7 +44,10 @@ if __name__ == "__main__":
     players_df.to_csv('./data/players.csv', index=False)
 
 
-    # TODO: Add code to build old roster data, find seasons_played
+    # TODO: Add code to build old roster data
+    roster_builder = RosterBuilder(old_rosters_dir)
+    old_rosters_df = roster_builder.build()
+    old_rosters_df.to_csv('./data/old_rosters.csv', index=False)
 
     # generate csv for season level data
     season_dfs = {}

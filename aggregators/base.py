@@ -20,13 +20,12 @@ class Aggregator(object):
             # clean data
             self._clean_data()
 
-            # join each DataFrame
-            df_agg = None
-            for k, df in self._data_frames.items():
-                if df_agg is None:
-                    df_agg = df
-                else:
-                    df_agg = df_agg.join(df, rsuffix="_{}".format(k))
+            # join DataFrames
+            df_agg = self._data_frames['Pass'].join(self._data_frames['Rush'],
+                                                    lsuffix='_Pass',
+                                                    rsuffix='_Rush')
+            df_agg = df_agg.join(self._data_frames['Receive'],
+                                 rsuffix='_Receive')
 
             self._aggregated_data_frame = df_agg.reset_index()
 
@@ -37,6 +36,7 @@ class Aggregator(object):
     def _clean_data(self) -> None:
         """ Rename Player_ID columns, clean data as needed """
         for df in self._data_frames.values():
+            df.drop(['Team', 'Player_Name'], axis=1, inplace=True)
             df.rename(columns={'Passer_ID': 'Player_ID',
                                'Rusher_ID': 'Player_ID',
                                'Receiver_ID': 'Player_ID'},

@@ -20,53 +20,31 @@ if __name__ == "__main__":
 
     # setup filepaths to datasets
     data_dir = os.environ['DATA_DIR']
-    roster_data_dir = os.path.join(data_dir, 'roster_data')
+    old_roster_data_dir = os.path.join(data_dir, 'roster_data')
     nflscrapr_data_dir = os.environ['NFLSCRAPR_DATA_DIR']
+    roster_data_dir = os.path.join(nflscrapr_data_dir, 'team_rosters')
     season_data_dir = os.path.join(nflscrapr_data_dir, 'season_player_stats')
 
-    # iterate over season player data. Filter and join passer, rusher, receiver
-    # CSVs to build DataFrame with all offensive player ids
+    # iterate over team_roster data, build DataFrame with all player ids
     players_df = None
-    for csv in os.listdir(season_data_dir):
-        # get id column from csv filename
-        #   e.g. 'season_passing_csv' -> 'Passer_ID'
-        id_column = csv[7:-10].title() + 'er_ID'
+    for csv in os.listdir(roster_data_dir):
+        df = pd.read_csv(os.path.join(roster_data_dir, csv))
 
-        df = pd.read_csv(os.path.join(season_data_dir, csv),
-                         usecols=[id_column,
-                                  'Player_Name',
-                                  'Season',
-                                  'Team'])
-
-        df.rename(columns={id_column: 'id',
-                           'Player_Name': 'name',
-                           'Season': 'season',
-                           'Team': 'team'},
+        df.rename(columns={'GSIS_ID': 'Player_ID',
+                           'Player': 'Full_Name'},
                   inplace=True)
-        df.drop_duplicates(inplace=True)
-        df.set_index(['id', 'name', 'season', 'team'], inplace=True)
 
         if players_df is None:
             players_df = df
         else:
-            players_df = players_df.join(df, how='outer')
-
-    players_df.reset_index(inplace=True)
-    players_df = players_df[players_df.name != 'None'].reset_index().drop('index', axis=1)
-
-    # build roster DataFrame
-    roster_builder = RosterBuilder(roster_data_dir)
-    roster_df = roster_builder.build()
-
-    # join players DataFrame with roster DataFrame
-    players_df = players_df.set_index(['name', 'team', 'season'])\
-                           .join(roster_df.set_index(['name', 'team', 'season']),
-                                 how='inner')
+            players_df = players_df.append(df)
 
     # save to csv
     # TODO: change output dir to os.environ var or arg
-    players_df.reset_index(inplace=True)
     players_df.to_csv('./data/players.csv', index=False)
+
+
+    # TODO: Add code to build old roster data, find seasons_played
 
     # generate csv for season level data
     season_dfs = {}

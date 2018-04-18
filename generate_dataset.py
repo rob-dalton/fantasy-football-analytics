@@ -51,6 +51,8 @@ if __name__ == "__main__":
     old_rosters_df = roster_builder.build()
     old_rosters_df.to_csv('./data/old_rosters.csv', index=False)
 
+    # TODO: add career_length, career_start to players.csv
+
     # generate csv for season level data
     season_dfs = {}
     for csv in os.listdir(season_data_dir):

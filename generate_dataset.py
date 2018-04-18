@@ -39,12 +39,14 @@ if __name__ == "__main__":
         else:
             players_df = players_df.append(df)
 
+    # convert FB to RB
+    players_df['Pos'] = players_df.Pos.apply(lambda x: 'RB' if x == 'FB' else x)
+
     # save to csv
     # TODO: change output dir to os.environ var or arg
     players_df.to_csv('./data/players.csv', index=False)
 
-
-    # TODO: Add code to build old roster data
+    # build old roster data
     roster_builder = RosterBuilder(old_rosters_dir)
     old_rosters_df = roster_builder.build()
     old_rosters_df.to_csv('./data/old_rosters.csv', index=False)

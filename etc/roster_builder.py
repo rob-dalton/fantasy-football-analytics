@@ -41,7 +41,7 @@ class RosterBuilder(object):
 
             # add name to df
             df['name'] = df.apply(self._abbreviate_name, axis=1)
-            df['Player_Name'] = df.apply(self._concatenate_name, axis=1)
+            df['Full_Name'] = df.apply(self._concatenate_name, axis=1)
 
             # drop last and first name
             df.drop(['first_name', 'last_name'], axis=1, inplace=True)

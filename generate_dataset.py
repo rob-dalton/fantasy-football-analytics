@@ -11,9 +11,11 @@ import os
 import typing
 
 import pandas as pd
+import numpy as np
 
 from aggregators import SeasonPlayerAggregator
 from etc.types import DataFrame
+from etc.career_extractor import CareerExtractor
 from etc.roster_builder import RosterBuilder
 
 if __name__ == "__main__":
@@ -51,7 +53,22 @@ if __name__ == "__main__":
     old_rosters_df = roster_builder.build()
     old_rosters_df.to_csv('./data/old_rosters.csv', index=False)
 
-    # TODO: add career_length, career_start to players.csv
+    # add career_length, career_start to players.csv
+    career_corrections = {'00-0025394': {'Seasons_old': [2007, 2008]},
+                          '00-0025438': {'Seasons_old': [2007, 2008]},
+                          '00-0027125': {'Seasons_old': np.nan},
+                          '00-0027702': {'Seasons_old': np.nan},
+                          '00-0027793': {'Seasons_old': np.nan},
+                          '00-0033536': {'Seasons_old': np.nan}}
+
+    career_extractor = CareerExtractor('./data/players.csv',
+                                       './data/old_rosters.csv',
+                                       career_corrections)
+
+    players_df = career_extractor.add_career_features(players_df)
+    players_df.to_csv('./data/players.csv', index=False)
+
+    import pdb; pdb.set_trace()
 
     # generate csv for season level data
     season_dfs = {}

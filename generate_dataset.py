@@ -68,8 +68,6 @@ if __name__ == "__main__":
     players_df = career_extractor.add_career_features(players_df)
     players_df.to_csv('./data/players.csv', index=False)
 
-    import pdb; pdb.set_trace()
-
     # generate csv for season level data
     season_dfs = {}
     for csv in os.listdir(season_data_dir):

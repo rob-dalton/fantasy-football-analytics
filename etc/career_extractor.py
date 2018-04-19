@@ -103,4 +103,4 @@ class CareerExtractor(object):
         df = df.set_index('Player_ID').join(df_career_start.set_index('Player_ID'))
         df['Career_Length'] = df.apply(self._find_career_length, axis=1)
 
-        return df
+        return df.reset_index()

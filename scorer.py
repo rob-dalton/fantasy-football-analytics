@@ -51,10 +51,10 @@ class GamePlayerScorer(Scorer):
 
     # map scorer values to column names
     COLUMN_SCORER_MAP = {"yard": ["Total_Yards_Rush",
-                                   "Total_Yards_Receive"],
-                         "yard_pass": ["Total_Yards"],
+                                  "Total_Yards_Receive"],
+                         "yard_pass": ["Total_Yards_Pass"],
                          "td": ["TDs_Rush", "TDs_Receive"],
-                         "td_pass": ["TDs"],
+                         "td_pass": ["TDs_Pass"],
                          "int": ["Interceptions"],
                          "fum": ["Fumbles"]}
 

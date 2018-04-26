@@ -3,6 +3,8 @@ SCORER
 Classes for calculating and scoring fantasy points
 
 """
+import numpy as np
+
 from typing import Optional
 from etc.types import DataFrame, Series
 
@@ -16,7 +18,7 @@ Standard ESPN points for offensive players. Legend for points keys:
     - int: interception
     - fum: fumble
 """
-STANDARD_POINT_SYSTEM = {
+STANDARD = {
     "yard": 0.1,
     "yard_pass": 0.04,
     "td": 6.0,
@@ -26,13 +28,16 @@ STANDARD_POINT_SYSTEM = {
     "int": -2.0
 }
 
+# TODO: Add PPR scoring
+
 
 class Scorer(object):
     """ Class to add fantasy points to aggregated data frames. """
 
-    def __init__(self, point_system: dict = STANDARD_POINT_SYSTEM):
-        """ :param point_system: dict of scorable metrics and their points """
-        self.point_system = point_system
+    def __init__(self, point_system: str = None):
+        """ :param point_system: point system to use, default is standard. """
+        if (point_system is None) or (point_system == 'standard'):
+            self.point_system = STANDARD
 
     def score(self, df: DataFrame, inplace: bool = False) -> Optional[DataFrame]:
         """
@@ -56,7 +61,8 @@ class GamePlayerScorer(Scorer):
                          "td": ["TDs_Rush", "TDs_Receive"],
                          "td_pass": ["TDs_Pass"],
                          "int": ["Interceptions"],
-                         "fum": ["Fumbles"]}
+                         "fum": ["Fumbles_Rush",
+                                 "Fumbles_Receive"]}
 
     def score(self, df: DataFrame, inplace: bool = False) -> Optional[DataFrame]:
         scored_df = None
@@ -70,8 +76,7 @@ class GamePlayerScorer(Scorer):
             scored_df[score_val] = scored_df[col_names].apply(sum, axis=1)
 
         # add score
-        scorable_cols = [k for k in self.COLUMN_SCORER_MAP.keys()]
-        scored_df['fantasy_points'] = scored_df[scorable_cols].apply(self._score_row, axis=1)
+        scored_df['fantasy_points'] = scored_df.apply(self._score_row, axis=1)
 
         # return df
         if not inplace:
@@ -79,8 +84,10 @@ class GamePlayerScorer(Scorer):
 
     def _score_row(self, row: Series) -> Series:
         score = 0
-        for k in self.COLUMN_SCORER_MAP.keys():
-            score += row[k] * self.point_system[k]
+        for points_type, cols in self.COLUMN_SCORER_MAP.items():
+            for col in cols:
+                if not np.isnan(row[col]):
+                    score += row[col] * self.point_system[points_type]
 
         return score
 

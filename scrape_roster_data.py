@@ -11,7 +11,7 @@ import pandas as pd
 
 from etc.types import DataFrame
 from etc.logging import initialize_logging
-from roster_scraper import RosterScraper
+from etc.roster_scraper import RosterScraper
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Scrape NFL roster data, save to specified directory.')

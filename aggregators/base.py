@@ -1,4 +1,7 @@
 """ Contains functions to aggregate NFL data contained in Pandas DataFrames. """
+from typing import List
+from collections import Counter
+
 from etc.types import DataFrame
 from scorer import GamePlayerScorer
 
@@ -14,18 +17,29 @@ class Aggregator(object):
                              "Rush": df_rushing.copy(),
                              "Receive": df_receiving.copy()}
 
-    def aggregate(self):
+    def aggregate(self) -> None:
         """ Join DataFrames, store result """
         if self._aggregated_data_frame is None:
             # clean data
             self._clean_data()
 
+            # get duplicate columns
+            duplicate_cols = self._get_duplicate_columns()
+
             # join DataFrames
-            df_agg = self._data_frames['Pass'].join(self._data_frames['Rush'],
-                                                    lsuffix='_Pass',
-                                                    rsuffix='_Rush')
-            df_agg = df_agg.join(self._data_frames['Receive'],
-                                 rsuffix='_Receive')
+            df_agg = None
+            for k,df in self._data_frames.items():
+
+                if duplicate_cols:
+                    cols = {col: col+'_'+k for col in duplicate_cols}
+                else:
+                    cols = {}
+
+                if df_agg is None:
+                    df_agg = df.rename(columns=cols)
+                else:
+                    df_agg = df_agg.join(df.rename(columns=cols),
+                                         rsuffix='_'+k)
 
             self._aggregated_data_frame = df_agg.reset_index()
 
@@ -41,3 +55,15 @@ class Aggregator(object):
                                'Rusher_ID': 'Player_ID',
                                'Receiver_ID': 'Player_ID'},
                       inplace=True)
+
+    def _get_duplicate_columns(self, ignore: List = None) -> List:
+        """ Find duplicate columns accross DataFrames """
+        if ignore is None:
+            ignore = []
+
+        # get column counts
+        col_counts = Counter()
+        for df in self._data_frames.values():
+            col_counts.update(df.drop(ignore, axis=1).columns.values)
+
+        return [col for col, ct in col_counts.items() if ct > 1]

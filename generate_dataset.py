@@ -7,6 +7,7 @@ Script to generate cleaned, reorganized Pandas DataFrames from raw CSVs
 
 """
 
+import argparse
 import os
 import typing
 
@@ -14,15 +15,26 @@ import pandas as pd
 import numpy as np
 
 from aggregators import SeasonPlayerAggregator, GamePlayerAggregator
-from etc.types import DataFrame
 from etc.career_extractor import CareerExtractor
+from etc.logging import initialize_logging
 from etc.roster_builder import RosterBuilder
+from etc.types import DataFrame
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Scrape NFL roster data, save to specified directory.')
+    parser.add_argument('--output', type=str, help='directory to save output to')
+    parser.add_argument('--scraped_rosters_dir', type=str, help='directory with scraped roster data csvs')
+
+    return parser.parse_args()
 
 if __name__ == "__main__":
+    initialize_logging()
+
+    # setup args
+    args = parse_args()
 
     # setup filepaths to datasets
-    data_dir = os.environ['DATA_DIR']
-    old_rosters_dir = os.path.join(data_dir, 'roster_data')
+    old_rosters_dir = args.scraped_rosters_dir
     nflscrapr_data_dir = os.environ['NFLSCRAPR_DATA_DIR']
     rosters_dir = os.path.join(nflscrapr_data_dir, 'team_rosters')
     season_data_dir = os.path.join(nflscrapr_data_dir, 'season_player_stats')
@@ -46,13 +58,14 @@ if __name__ == "__main__":
     players_df['Pos'] = players_df.Pos.apply(lambda x: 'RB' if x == 'FB' else x)
 
     # save to csv
-    # TODO: change output dir to os.environ var or arg
-    players_df.to_csv('./data/players.csv', index=False)
+    players_fpath = os.path.join(args.output, 'players.csv')
+    players_df.to_csv(players_fpath, index=False)
 
     # build old roster data
     roster_builder = RosterBuilder(old_rosters_dir)
     old_rosters_df = roster_builder.build()
-    old_rosters_df.to_csv('./data/old_rosters.csv', index=False)
+    old_rosters_fpath = os.path.join(args.output, 'old_rosters.csv')
+    old_rosters_df.to_csv(old_rosters_fpath, index=False)
 
     # add career_length, career_start to players.csv
     career_corrections = {'00-0025394': {'Seasons_old': [2007, 2008]},
@@ -62,12 +75,12 @@ if __name__ == "__main__":
                           '00-0027793': {'Seasons_old': np.nan},
                           '00-0033536': {'Seasons_old': np.nan}}
 
-    career_extractor = CareerExtractor('./data/players.csv',
-                                       './data/old_rosters.csv',
+    career_extractor = CareerExtractor(players_fpath,
+                                       old_rosters_fpath,
                                        career_corrections)
 
     players_df = career_extractor.add_career_features(players_df)
-    players_df.to_csv('./data/players.csv', index=False)
+    players_df.to_csv(players_fpath, index=False)
 
     # generate csv for season level data
     seasons_dfs = {}
@@ -86,7 +99,7 @@ if __name__ == "__main__":
                                                df_rushing=seasons_dfs['Rush'],
                                                df_receiving=seasons_dfs['Receiv'])
     df_seasons = season_aggregator.aggregate()
-    df_seasons.to_csv('./data/seasons.csv', index=False)
+    df_seasons.to_csv(os.path.join(args.output, 'seasons.csv'), index=False)
 
 
     # generate csv for game level data
@@ -96,6 +109,6 @@ if __name__ == "__main__":
 
     game_aggregator = GamePlayerAggregator(df_pass, df_rush, df_receive)
     df_games = game_aggregator.aggregate()
-    df_games.to_csv('./data/games.csv')
+    df_games.to_csv(os.path.join(args.output, 'games.csv'))
 
     # TODO: Add play_level_data DataFrame generation code here

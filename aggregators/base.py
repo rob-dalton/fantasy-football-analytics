@@ -27,6 +27,7 @@ class Aggregator(object):
             duplicate_cols = self._get_duplicate_columns()
 
             # join DataFrames
+            # NOTE: need to solve season problem for SeasonPlayerAggregator
             df_agg = None
             for k,df in self._data_frames.items():
 
@@ -39,6 +40,7 @@ class Aggregator(object):
                     df_agg = df.rename(columns=cols)
                 else:
                     df_agg = df_agg.join(df.rename(columns=cols),
+                                         how='outer',
                                          rsuffix='_'+k)
 
             self._aggregated_data_frame = df_agg.reset_index()

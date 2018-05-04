@@ -30,7 +30,6 @@ STANDARD = {
 
 # TODO: Add PPR scoring
 
-
 class Scorer(object):
     """ Class to add fantasy points to aggregated data frames. """
 
@@ -51,8 +50,8 @@ class Scorer(object):
         """ Score a single row of a DataFrame """
         raise NotImplementedError
 
-class GamePlayerScorer(Scorer):
-    """ Scorer for GamePlayer level data """
+class StandardScorer(Scorer):
+    """ Standard scorer for Fantasy data """
 
     # map scorer values to column names
     COLUMN_SCORER_MAP = {"yard": ["Total_Yards_Rush",

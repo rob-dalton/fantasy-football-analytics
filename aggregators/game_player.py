@@ -3,16 +3,9 @@ from typing import List
 
 from .base import Aggregator
 from etc.types import DataFrame
-from scorer import GamePlayerScorer
 
 class GamePlayerAggregator(Aggregator):
     """ Aggregator for game player level data """
-
-    def score(self) -> None:
-        # TODO: Find way to add, score 2 point conversion data from
-        #       play-by-play dataset
-        scorer = GamePlayerScorer()
-        scorer.score(self._aggregated_data_frame, inplace=True)
 
     def _clean_data(self) -> None:
         """ Rename ID columns and set IDs as multi-index """

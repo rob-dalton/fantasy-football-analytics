@@ -3,7 +3,7 @@ from typing import List
 from collections import Counter
 
 from etc.types import DataFrame
-from scorer import GamePlayerScorer
+from etc.scorers import StandardScorer
 
 class Aggregator(object):
     """ Base class for Aggregators. Aggregates offensive player datasets, adds fantasy points."""
@@ -17,8 +17,8 @@ class Aggregator(object):
                              "Rush": df_rushing.copy(),
                              "Receive": df_receiving.copy()}
 
-    def aggregate(self) -> None:
-        """ Join DataFrames, store result """
+    def aggregate(self) -> DataFrame:
+        """ Join DataFrames, score, return result """
         if self._aggregated_data_frame is None:
             # clean data
             self._clean_data()
@@ -43,11 +43,22 @@ class Aggregator(object):
                                          how='outer',
                                          rsuffix='_'+k)
 
-            self._aggregated_data_frame = df_agg.reset_index()
+            df_agg.reset_index(inplace=True)
+            self._aggregated_data_frame = df_agg
 
-    def score(self) -> DataFrame:
+            self._score()
+
+        return self._aggregated_data_frame
+
+    def _score(self, point_system: str = None) -> DataFrame:
         """ Add fantasy points to aggregated DataFrame """
-        raise NotImplementedError
+        #TODO: Add additional point systems for _score and scorers
+
+        scorer = None
+        if point_system is None:
+            scorer = StandardScorer()
+
+        scorer.score(self._aggregated_data_frame, inplace=True)
 
     def _clean_data(self) -> None:
         """ Rename Player_ID columns, clean data as needed """

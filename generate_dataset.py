@@ -85,9 +85,8 @@ if __name__ == "__main__":
                                                df_rushing=season_dfs['Rush'],
                                                df_receiving=season_dfs['Receiv'])
 
-    season_aggregator.aggregate()
-    season_aggregator._aggregated_data_frame.to_csv('./data/season.csv',
-                                                    index=False)
+    df_season = season_aggregator.aggregate()
+    df_season.to_csv('./data/season.csv', index=False)
 
     # TODO: Add game_level_data DataFrame generation code here
     # TODO: Add play_level_data DataFrame generation code here

@@ -13,7 +13,7 @@ import typing
 import pandas as pd
 import numpy as np
 
-from aggregators import SeasonPlayerAggregator
+from aggregators import SeasonPlayerAggregator, GamePlayerAggregator
 from etc.types import DataFrame
 from etc.career_extractor import CareerExtractor
 from etc.roster_builder import RosterBuilder
@@ -26,6 +26,7 @@ if __name__ == "__main__":
     nflscrapr_data_dir = os.environ['NFLSCRAPR_DATA_DIR']
     rosters_dir = os.path.join(nflscrapr_data_dir, 'team_rosters')
     season_data_dir = os.path.join(nflscrapr_data_dir, 'season_player_stats')
+    game_data_dir = os.path.join(nflscrapr_data_dir, 'game_player_stats')
 
     # iterate over team_roster data, build DataFrame with all player ids
     players_df = None
@@ -69,7 +70,7 @@ if __name__ == "__main__":
     players_df.to_csv('./data/players.csv', index=False)
 
     # generate csv for season level data
-    season_dfs = {}
+    seasons_dfs = {}
     for csv in os.listdir(season_data_dir):
         # get id column from csv filename
         #   e.g. 'season_passing_csv' -> 'Passer_ID'
@@ -79,14 +80,22 @@ if __name__ == "__main__":
         df = pd.read_csv(os.path.join(season_data_dir, csv))
         df.rename(columns={id_column: 'id'})
 
-        season_dfs[stat_type] = df
+        seasons_dfs[stat_type] = df
 
-    season_aggregator = SeasonPlayerAggregator(df_passing=season_dfs['Pass'],
-                                               df_rushing=season_dfs['Rush'],
-                                               df_receiving=season_dfs['Receiv'])
+    season_aggregator = SeasonPlayerAggregator(df_passing=seasons_dfs['Pass'],
+                                               df_rushing=seasons_dfs['Rush'],
+                                               df_receiving=seasons_dfs['Receiv'])
+    df_seasons = season_aggregator.aggregate()
+    df_seasons.to_csv('./data/seasons.csv', index=False)
 
-    df_season = season_aggregator.aggregate()
-    df_season.to_csv('./data/season.csv', index=False)
 
-    # TODO: Add game_level_data DataFrame generation code here
+    # generate csv for game level data
+    df_pass = pd.read_csv(os.path.join(game_data_dir, 'game_passing_df.csv'))
+    df_rush = pd.read_csv(os.path.join(game_data_dir, 'game_rushing_df.csv'))
+    df_receive = pd.read_csv(os.path.join(game_data_dir, 'game_receiving_df.csv'))
+
+    game_aggregator = GamePlayerAggregator(df_pass, df_rush, df_receive)
+    df_games = game_aggregator.aggregate()
+    df_games.to_csv('./data/games.csv')
+
     # TODO: Add play_level_data DataFrame generation code here
